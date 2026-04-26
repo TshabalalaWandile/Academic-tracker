@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36511.14 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Academic tracker", "Academic tracker\Academic tracker.csproj", "{D3B85F24-685C-454C-BE33-5FD9C5C8B19A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D3B85F24-685C-454C-BE33-5FD9C5C8B19A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3B85F24-685C-454C-BE33-5FD9C5C8B19A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3B85F24-685C-454C-BE33-5FD9C5C8B19A}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{D3B85F24-685C-454C-BE33-5FD9C5C8B19A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3B85F24-685C-454C-BE33-5FD9C5C8B19A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5F58A57A-9FBC-4872-BA8D-69F8F3F01A83}
+	EndGlobalSection
+EndGlobal

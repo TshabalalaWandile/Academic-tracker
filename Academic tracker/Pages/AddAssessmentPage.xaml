@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Academic_tracker.Pages.AddAssessmentPage"
+             Title="Add Assessment">
+
+    <VerticalStackLayout Padding="30" Spacing="15">
+        <Label Text="Add Assessment" FontSize="28" FontAttributes="Bold" HorizontalOptions="Center"/>
+
+        <Label Text="Assessment Name"/>
+        <Entry x:Name="AssessmentNameEntry" Placeholder="e.g. Test 1"/>
+
+        <Label Text="Weighting (%)"/>
+        <Entry x:Name="WeightingEntry" Placeholder="e.g. 20" Keyboard="Numeric"/>
+
+        <Label Text="Mark Obtained"/>
+        <Entry x:Name="MarkObtainedEntry" Placeholder="e.g. 75" Keyboard="Numeric"/>
+
+        <Label Text="Total Mark"/>
+        <Entry x:Name="TotalMarkEntry" Placeholder="e.g. 100" Keyboard="Numeric"/>
+
+        <Button Text="Save Assessment" Clicked="OnSaveClicked"/>
+        <Button Text="Cancel" Clicked="OnCancelClicked"/>
+    </VerticalStackLayout>
+
+</ContentPage>
