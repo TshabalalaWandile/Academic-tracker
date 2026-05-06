@@ -49,6 +49,14 @@ public partial class Dashboard : ContentPage
         string moduleCode = await DisplayPromptAsync("New Module", "Enter module code:");
         if (string.IsNullOrWhiteSpace(moduleCode)) return;
 
+        
+        bool exists = await _db.ModuleCodeExistsAsync(moduleCode, _userID);
+        if (exists)
+        {
+            await DisplayAlert("Error", "This module code already exists.", "OK");
+            return;
+        }
+
         string targetStr = await DisplayPromptAsync("New Module", "Enter target mark (%):", keyboard: Keyboard.Numeric);
         if (!double.TryParse(targetStr, out double targetMark)) return;
 
@@ -56,7 +64,7 @@ public partial class Dashboard : ContentPage
         {
             UserID = _userID,
             ModuleName = moduleName,
-            ModuleCode = moduleCode,
+            ModuleCode = moduleCode.ToUpper(), 
             TargetMark = targetMark
         };
 
@@ -82,11 +90,19 @@ public partial class Dashboard : ContentPage
             string moduleCode = await DisplayPromptAsync("Edit Module", "Module code:", initialValue: vm.ModuleCode);
             if (string.IsNullOrWhiteSpace(moduleCode)) return;
 
+            
+            bool exists = await _db.ModuleCodeExistsAsync(moduleCode, _userID, vm.Module.ModuleID);
+            if (exists)
+            {
+                await DisplayAlert("Error", "This module code already exists.", "OK");
+                return;
+            }
+
             string targetStr = await DisplayPromptAsync("Edit Module", "Target mark (%):", initialValue: vm.TargetMark.ToString(), keyboard: Keyboard.Numeric);
             if (!double.TryParse(targetStr, out double targetMark)) return;
 
             vm.Module.ModuleName = moduleName;
-            vm.Module.ModuleCode = moduleCode;
+            vm.Module.ModuleCode = moduleCode.ToUpper();
             vm.Module.TargetMark = targetMark;
 
             await _db.UpdateModuleAsync(vm.Module);

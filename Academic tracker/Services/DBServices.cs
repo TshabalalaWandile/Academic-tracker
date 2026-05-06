@@ -104,5 +104,19 @@ namespace Academic_tracker.Services
             var assessments = await _db.Table<Assessment>().Where(a => a.ModuleID == moduleID).ToListAsync();
             return assessments.Sum(a => a.Weighting);
         }
+
+        public async Task<bool> ModuleCodeExistsAsync(string moduleCode, int userID, int excludeModuleId = 0)
+        {
+            await InitAsync();
+            var existing = await _db.Table<Module>()
+        .Where(m =>
+            m.ModuleCode.ToLower() == moduleCode.ToLower() &&
+            m.UserID == userID &&
+            m.ModuleID != excludeModuleId)
+        .FirstOrDefaultAsync();
+
+            return existing != null;
+        }
+
     }
 }

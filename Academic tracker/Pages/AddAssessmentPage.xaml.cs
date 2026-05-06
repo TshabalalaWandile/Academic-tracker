@@ -37,6 +37,12 @@ public partial class AddAssessmentPage : ContentPage
             return;
         }
 
+        if(markObtained > totalMark)
+        {
+            await DisplayAlert("Error", "Please enter a mark that is less than the test total.", "OK");
+            return;
+        }
+
         // Check weighting cap
         double currentTotal = await _db.GetTotalWeightingAsync(_moduleID);
         if (currentTotal + weighting > 100)
