@@ -71,4 +71,38 @@ public partial class Dashboard : ContentPage
             await Navigation.PushAsync(new ModuleDetailPage(_db, vm.Module));
         }
     }
+
+    private async void OnEditModuleClicked(object sender, EventArgs e)
+    {
+        if (sender is Button button && button.CommandParameter is ModuleViewModel vm)
+        {
+            string moduleName = await DisplayPromptAsync("Edit Module", "Module name:", initialValue: vm.ModuleName);
+            if (string.IsNullOrWhiteSpace(moduleName)) return;
+
+            string moduleCode = await DisplayPromptAsync("Edit Module", "Module code:", initialValue: vm.ModuleCode);
+            if (string.IsNullOrWhiteSpace(moduleCode)) return;
+
+            string targetStr = await DisplayPromptAsync("Edit Module", "Target mark (%):", initialValue: vm.TargetMark.ToString(), keyboard: Keyboard.Numeric);
+            if (!double.TryParse(targetStr, out double targetMark)) return;
+
+            vm.Module.ModuleName = moduleName;
+            vm.Module.ModuleCode = moduleCode;
+            vm.Module.TargetMark = targetMark;
+
+            await _db.UpdateModuleAsync(vm.Module);
+            await LoadModules();
+        }
+    }
+
+    private async void OnDeleteModuleClicked(object sender, EventArgs e)
+    {
+        if (sender is Button button && button.CommandParameter is ModuleViewModel vm)
+        {
+            bool confirm = await DisplayAlert("Delete", $"Are you sure you want to delete {vm.ModuleName}?", "Yes", "No");
+            if (!confirm) return;
+
+            await _db.DeleteModuleAsync(vm.Module);
+            await LoadModules();
+        }
+    }
 }

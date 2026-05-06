@@ -37,6 +37,14 @@ public partial class AddAssessmentPage : ContentPage
             return;
         }
 
+        // Check weighting cap
+        double currentTotal = await _db.GetTotalWeightingAsync(_moduleID);
+        if (currentTotal + weighting > 100)
+        {
+            await DisplayAlert("Error", $"Total weighting cannot exceed 100%. You have {100 - currentTotal}% remaining.", "OK");
+            return;
+        }
+
         var assessment = new Assessment
         {
             ModuleID = _moduleID,

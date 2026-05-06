@@ -73,5 +73,36 @@ namespace Academic_tracker.Services
             }
             return runningMark;
         }
+
+        public async Task UpdateModuleAsync(Module module)
+        {
+            await InitAsync();
+            await _db.UpdateAsync(module);
+        }
+
+        public async Task DeleteModuleAsync(Module module)
+        {
+            await InitAsync();
+            await _db.DeleteAsync(module);
+        }
+
+        public async Task UpdateAssessmentAsync(Assessment assessment)
+        {
+            await InitAsync();
+            await _db.UpdateAsync(assessment);
+        }
+
+        public async Task DeleteAssessmentAsync(Assessment assessment)
+        {
+            await InitAsync();
+            await _db.DeleteAsync(assessment);
+        }
+
+        public async Task<double> GetTotalWeightingAsync(int moduleID)
+        {
+            await InitAsync();
+            var assessments = await _db.Table<Assessment>().Where(a => a.ModuleID == moduleID).ToListAsync();
+            return assessments.Sum(a => a.Weighting);
+        }
     }
 }

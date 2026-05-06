@@ -5,7 +5,7 @@
              Title="Login">
 
     <VerticalStackLayout Padding="30" Spacing="15">
-        <Label Text="Academic Tracker" FontSize="28" FontAttributes="Bold" HorizontalOptions="Center"/>
+        <Label Text="Welcome To TrackWise" FontSize="28" FontAttributes="Bold" HorizontalOptions="Center"/>
 
         <Entry x:Name="EmailEntry" Placeholder="Email"/>
         <Entry x:Name="PasswordEntry" Placeholder="Password" IsPassword="True"/>
