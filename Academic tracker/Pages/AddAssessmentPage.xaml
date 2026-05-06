@@ -2,25 +2,35 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Academic_tracker.Pages.AddAssessmentPage"
-             Title="Add Assessment">
+             BackgroundColor="{StaticResource BackgroundColor}">
 
-    <VerticalStackLayout Padding="30" Spacing="15">
-        <Label Text="Add Assessment" FontSize="28" FontAttributes="Bold" HorizontalOptions="Center"/>
+    <ScrollView>
+        <VerticalStackLayout Padding="30" Spacing="15">
+            <Label Text="Add Assessment" FontSize="28" FontAttributes="Bold"
+                   TextColor="{StaticResource PrimaryColor}" HorizontalOptions="Center"/>
 
-        <Label Text="Assessment Name"/>
-        <Entry x:Name="AssessmentNameEntry" Placeholder="e.g. Test 1"/>
+            <Border BackgroundColor="{StaticResource CardColor}" Padding="25"
+                    StrokeThickness="0" StrokeShape="RoundRectangle 15">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Assessment Name" FontAttributes="Bold" TextColor="{StaticResource TextDark}"/>
+                    <Entry x:Name="AssessmentNameEntry" Placeholder="e.g. Test 1"/>
 
-        <Label Text="Weighting (%)"/>
-        <Entry x:Name="WeightingEntry" Placeholder="e.g. 20" Keyboard="Numeric"/>
+                    <Label Text="Weighting (%)" FontAttributes="Bold" TextColor="{StaticResource TextDark}"/>
+                    <Entry x:Name="WeightingEntry" Placeholder="e.g. 20" Keyboard="Numeric"/>
 
-        <Label Text="Mark Obtained"/>
-        <Entry x:Name="MarkObtainedEntry" Placeholder="e.g. 75" Keyboard="Numeric"/>
+                    <Label Text="Mark Obtained" FontAttributes="Bold" TextColor="{StaticResource TextDark}"/>
+                    <Entry x:Name="MarkObtainedEntry" Placeholder="e.g. 75" Keyboard="Numeric"/>
 
-        <Label Text="Total Mark"/>
-        <Entry x:Name="TotalMarkEntry" Placeholder="e.g. 100" Keyboard="Numeric"/>
+                    <Label Text="Total Mark" FontAttributes="Bold" TextColor="{StaticResource TextDark}"/>
+                    <Entry x:Name="TotalMarkEntry" Placeholder="e.g. 100" Keyboard="Numeric"/>
 
-        <Button Text="Save Assessment" Clicked="OnSaveClicked"/>
-        <Button Text="Cancel" Clicked="OnCancelClicked"/>
-    </VerticalStackLayout>
+                    <Button Text="Save Assessment" Clicked="OnSaveClicked" Margin="0,10,0,0"/>
+                    <Button Text="Cancel" Clicked="OnCancelClicked"
+                            BackgroundColor="{StaticResource AccentColor}"
+                            TextColor="{StaticResource PrimaryColor}"/>
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
 
 </ContentPage>

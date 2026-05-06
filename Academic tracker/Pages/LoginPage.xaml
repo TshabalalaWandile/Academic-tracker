@@ -2,16 +2,34 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Academic_tracker.Pages.LoginPage"
-             Title="Login">
+             BackgroundColor="{StaticResource BackgroundColor}">
 
-    <VerticalStackLayout Padding="30" Spacing="15">
-        <Label Text="Welcome To TrackWise" FontSize="28" FontAttributes="Bold" HorizontalOptions="Center"/>
+    <ScrollView>
+        <VerticalStackLayout Padding="30" Spacing="15" VerticalOptions="Center">
 
-        <Entry x:Name="EmailEntry" Placeholder="Email"/>
-        <Entry x:Name="PasswordEntry" Placeholder="Password" IsPassword="True"/>
+            <Label Text="🎓" FontSize="60" HorizontalOptions="Center"/>
+            <Label Text="Academic Tracker" FontSize="28" FontAttributes="Bold"
+                   TextColor="{StaticResource PrimaryColor}" HorizontalOptions="Center"/>
+            <Label Text="Track your progress, own your results" FontSize="14"
+                   TextColor="{StaticResource TextGray}" HorizontalOptions="Center" Margin="0,0,0,20"/>
 
-        <Button Text="Login" Clicked="OnLoginClicked"/>
-        <Button Text="Register" Clicked="OnRegisterClicked"/>
-    </VerticalStackLayout>
+            <Border BackgroundColor="{StaticResource CardColor}" Padding="25" StrokeThickness="0"
+                    StrokeShape="RoundRectangle 15">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Email" FontAttributes="Bold" TextColor="{StaticResource TextDark}"/>
+                    <Entry x:Name="EmailEntry" Placeholder="Enter your email"/>
+
+                    <Label Text="Password" FontAttributes="Bold" TextColor="{StaticResource TextDark}"/>
+                    <Entry x:Name="PasswordEntry" Placeholder="Enter your password" IsPassword="True"/>
+
+                    <Button Text="Login" Clicked="OnLoginClicked" Margin="0,10,0,0"/>
+                    <Button Text="Create Account" Clicked="OnRegisterClicked"
+                            BackgroundColor="{StaticResource AccentColor}"
+                            TextColor="{StaticResource PrimaryColor}"/>
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
 
 </ContentPage>
