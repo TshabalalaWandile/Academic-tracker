@@ -9,7 +9,7 @@
 
             <Label Text="Create Account" FontSize="28" FontAttributes="Bold"
                    TextColor="{StaticResource PrimaryColor}" HorizontalOptions="Center"/>
-            <Label Text="Join Academic Tracker today" FontSize="14"
+            <Label Text="Join TrackWise Today" FontSize="14"
                    TextColor="{StaticResource TextGray}" HorizontalOptions="Center" Margin="0,0,0,20"/>
 
             <Border BackgroundColor="{StaticResource CardColor}" Padding="25" StrokeThickness="0"
