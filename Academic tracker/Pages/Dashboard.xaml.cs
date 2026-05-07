@@ -100,11 +100,11 @@ public partial class Dashboard : ContentPage
 
             if (!double.TryParse(targetStr, out double targetMark))
             {
-                await DisplayAlert("Error", "Target mark must be a valid number.", "OK");
+                await DisplayAlert("Error", "Please enter a valid number for the target mark.", "OK");
                 return;
             }
 
-            if (targetMark < 0 || targetMark > 100)
+            if (targetMark <= 0 || targetMark > 100)
             {
                 await DisplayAlert("Error", "Target mark must be between 0 and 100%.", "OK");
                 return;
@@ -125,7 +125,7 @@ public partial class Dashboard : ContentPage
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Error adding module: {ex.Message}");
+            Debug.WriteLine("Error adding module: " + ex.Message);
             await DisplayAlert("Error", "Failed to add module. Please try again.", "OK");
         }
     }
@@ -143,7 +143,7 @@ public partial class Dashboard : ContentPage
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Navigation error: {ex.Message}");
+            Debug.WriteLine("Navigation error: " + ex.Message);
             await DisplayAlert("Error", "Failed to navigate to module details.", "OK");
         }
     }
