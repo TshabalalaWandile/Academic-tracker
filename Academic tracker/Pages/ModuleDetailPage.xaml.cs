@@ -1,5 +1,6 @@
-using Academic_tracker.Models;
+﻿using Academic_tracker.Models;
 using Academic_tracker.Services;
+using System.Reflection.Metadata;
 
 namespace Academic_tracker.Pages;
 
@@ -21,7 +22,30 @@ public partial class ModuleDetailPage : ContentPage
 
         ModuleNameLabel.Text = _module.ModuleName;
         ModuleCodeLabel.Text = _module.ModuleCode;
-        TargetMarkLabel.Text = $"Target: {_module.TargetMark}%";
+        TargetMarkLabel.Text = "Target: " + _module.TargetMark + "%";
+
+        // Calculate and display running mark + status on this screen
+        var runningMark = await _db.GetRunningMarkAsync(_module.ModuleID);
+        RunningMarkLabel.Text = "Running Mark: "  + runningMark.ToString("F1") + "%";
+
+        // Running mark is at or above the target
+        if (runningMark >= _module.TargetMark)
+        {
+            StatusLabel.Text = "✅ On Track";
+            StatusLabel.TextColor = Colors.LightGreen;
+        }
+        // Running mark is below the target but still within 80 % of it — close but not there yet
+        else if (runningMark >= _module.TargetMark * 0.8)
+        {
+            StatusLabel.Text = "⚠️ At Risk";
+            StatusLabel.TextColor = Colors.Orange;
+        }
+        // running mark is below 80% of the target — far off
+        else
+        {
+            StatusLabel.Text = "❌ Off Track";
+            StatusLabel.TextColor = Colors.OrangeRed;
+        }
 
         await LoadAssessments();
     }

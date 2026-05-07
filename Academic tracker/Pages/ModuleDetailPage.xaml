@@ -15,6 +15,10 @@
                        HorizontalOptions="Center"/>
                 <Label x:Name="TargetMarkLabel" FontSize="16" TextColor="White"
                        HorizontalOptions="Center"/>
+                <Label x:Name="RunningMarkLabel" FontSize="16" TextColor="White"
+                       HorizontalOptions="Center"/>
+                <Label x:Name="StatusLabel" FontSize="16" FontAttributes="Bold"
+                       HorizontalOptions="Center"/>
             </VerticalStackLayout>
         </Border>
 
