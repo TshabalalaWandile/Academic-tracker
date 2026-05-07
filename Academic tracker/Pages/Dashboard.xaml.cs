@@ -115,10 +115,29 @@ public partial class Dashboard : ContentPage
         if (sender is Button button && button.CommandParameter is ModuleViewModel vm)
         {
             bool confirm = await DisplayAlert("Delete", $"Are you sure you want to delete {vm.ModuleName}?", "Yes", "No");
-            if (!confirm) return;
+
+            if (!confirm)
+            {
+                return;
+            }
 
             await _db.DeleteModuleAsync(vm.Module);
             await LoadModules();
         }
+    }
+
+    private async void OnLogoutClicked(object sender, EventArgs e)
+    {
+        bool confirm = await DisplayAlert("Logout", "Are you sure you want to log out?", "Yes", "No");
+
+        if (!confirm)
+        {
+            return;
+        }
+        // Clear the saved session
+        Preferences.Remove("loggedInUserID");
+
+        // Navigate back to login, clearing the navigation stack
+        Application.Current!.MainPage = new NavigationPage(new LoginPage(_db));
     }
 }

@@ -7,8 +7,10 @@
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Logout" Clicked="OnLogoutClicked" Order="Primary" Priority="0"/>
     </ContentPage.ToolbarItems>
-
+    
     <VerticalStackLayout Padding="20" Spacing="15">
+
+
         <Label Text="My Modules" FontSize="28" FontAttributes="Bold"
                TextColor="{StaticResource PrimaryColor}" HorizontalOptions="Center"/>
 
