@@ -1,6 +1,7 @@
 using Academic_tracker.Models;
 using Academic_tracker.Services;
 using System.Net.Mail;
+using System.Diagnostics;
 
 namespace Academic_tracker.Pages;
 
@@ -28,48 +29,120 @@ public partial class RegisterPage : ContentPage
         }
     }
 
-    private async void OnRegisterClicked(object sender, EventArgs e)
+    // Validates password strength
+    private bool IsValidPassword(string password)
     {
-        var username = UsernameEntry.Text?.Trim();
-        var email = EmailEntry.Text?.Trim();
-        var password = PasswordEntry.Text;
-
-        if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
-        {
-            await DisplayAlert("Error", "Please fill in all fields.", "OK");
-            return;
-        }
-
-        // Validate that the email entered is in the correct format
-        if (!IsValidEmail(email))
-        {
-            await DisplayAlert("Error", "Please enter a valid email address.", "OK");
-            return;
-        }
-
-        await _db.InitAsync();
-
-        var existing = await _db.GetUserByEmailAsync(email);
-        if (existing != null)
-        {
-            await DisplayAlert("Error", "An account with this email already exists.", "OK");
-            return;
-        }
-
-        var user = new User
-        {
-            Username = username,
-            Email = email,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(password)
-        };
-
-        await _db.AddUserAsync(user);
-        await DisplayAlert("Success", "Account created! Please log in.", "OK");
-        await Navigation.PopAsync();
+        // Minimum 8 characters
+        return !String.IsNullOrEmpty(password) && password.Length >= 8;
     }
 
+
+    private async void OnRegisterClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            // Retrive and trim user input
+            var username = UsernameEntry.Text?.Trim();
+            var email = EmailEntry.Text?.Trim();
+            var password = PasswordEntry.Text;
+
+            // Validate username
+            if (string.IsNullOrEmpty(username))
+            {
+                await DisplayAlert("Error", "Please enter a username.", "OK");
+                return;
+            }
+
+            if (username.Length > 50)
+            {
+                await DisplayAlert("Error", "Please enter a username.", "OK");
+                return;
+            }
+
+            // Validate that the email
+            if (string.IsNullOrEmpty(email))
+            {
+                await DisplayAlert("Error", "Please enter an email.", "OK");
+                return;
+            }
+            
+            if (!IsValidEmail(email))
+            {
+                await DisplayAlert("Error", "Please enter a valid email address.", "OK");
+                return;
+            }
+
+            // Validate password
+            if (string.IsNullOrEmpty(password))
+            {
+                await DisplayAlert("Error", "Please enter a password.", "OK");
+                return;
+            }
+
+            if (!IsValidPassword(password))
+            {
+                await DisplayAlert("Error", "Password must be at least 8 characters.", "OK");
+                return;
+            }
+
+            try
+            {
+                // Initialize database connection
+                await _db.InitAsync();
+
+                // Check if an account with this email already exists
+                var existing = await _db.GetUserByEmailAsync(email);
+                if (existing != null)
+                {
+                    await DisplayAlert("Error", "An account with this email already exists.", "OK");
+                    return;
+                }
+
+                // Create new user with hashed password
+                var user = new User
+                {
+                    Username = username,
+                    Email = email,
+                    // Use Bcrypt to securely hash the password - never store plain text passwords
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(password)
+                };
+
+                // Store the new user in the database
+                await _db.AddUserAsync(user);
+
+                // Display success message
+                await DisplayAlert("Success", "Account created! Please log in.", "OK");
+
+                // Return to previous page (LoginPage)
+                await Navigation.PopAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Unexpected error: " + ex.Message);
+                await DisplayAlert("Error", "Registration failed. Please try again.", "OK");
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("Unexpected error: " + ex.Message);
+            await DisplayAlert("Error", "An unexpected error occurred.", "OK");
+        }
+    }
+
+    /// Handles the back button click event and returns to the previous page without creating an account.
     private async void OnBackClicked(object sender, EventArgs e)
     {
-        await Navigation.PopAsync();
+        try
+        {
+            // Navigate back to the previous page
+            await Navigation.PopAsync();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("Navigation error: " + ex.Message);
+            await DisplayAlert("Erorr", "Failed to navigate back.", "OK");
+        }
+
     }
 }
