@@ -1,6 +1,7 @@
 using Academic_tracker.Models;
 using Academic_tracker.Services;
 using Academic_tracker.ViewModels;
+using System.Diagnostics;
 
 namespace Academic_tracker.Pages;
 
@@ -45,6 +46,15 @@ public partial class Dashboard : ContentPage
         ModulesCollection.ItemsSource = viewModels;
     }
 
+    // Validates module code format
+    private bool IsValidModuleCode(string code)
+    {
+        return !string.IsNullOrWhiteSpace(code) &&
+               code.Length >= 2 &&
+               code.Length <= 10 &&
+               code.All(char.IsLetterOrDigit);
+    }
+
     private async void OnAddModuleClicked(object sender, EventArgs e)
     {
         // Prompt for module name
@@ -62,51 +72,96 @@ public partial class Dashboard : ContentPage
         }
 
         // Prompt for module code
-        string moduleCode = await DisplayPromptAsync("New Module", "Enter module code:");
-        if (string.IsNullOrWhiteSpace(moduleCode)) return;
-
-        
-        bool exists = await _db.ModuleCodeExistsAsync(moduleCode, _userID);
-        if (exists)
+        string moduleCode = await DisplayPromptAsync("New Module", "Enter module code (e.g., COMP301):");
+        if (!IsValidModuleCode(moduleCode))
         {
-            await DisplayAlert("Error", "This module code already exists.", "OK");
+            await DisplayAlert("Error", "Module code must be 2-10 alphanumeric characters.", "OK");
             return;
         }
 
-        string targetStr = await DisplayPromptAsync("New Module", "Enter target mark (%):", keyboard: Keyboard.Numeric);
-        if (!double.TryParse(targetStr, out double targetMark)) return;
 
-        var module = new Module
+        try
         {
-            UserID = _userID,
-            ModuleName = moduleName,
-            ModuleCode = moduleCode.ToUpper(), 
-            TargetMark = targetMark
-        };
+            // Check if this module code already exists for this user
+            bool exists = await _db.ModuleCodeExistsAsync(moduleCode, _userID);
+            if (exists)
+            {
+                await DisplayAlert("Error", "This module code already exists.", "OK");
+                return;
+            }
 
-        await _db.AddModuleAsync(module);
-        await LoadModules();
-    }
+            // Prompt for target mark (numeric input)
+            string targetStr = await DisplayPromptAsync("New Module", "Enter target mark (0-100%):", keyboard: Keyboard.Numeric);
+            if (string.IsNullOrWhiteSpace(targetStr))
+            {
+                await DisplayAlert("Error", "Target mark is required.", "OK");
+                return;
+            }
 
-    private async void OnModuleTapped(object sender, EventArgs e)
-    {
-        if (sender is Border border && border.BindingContext is ModuleViewModel vm)
+            if (!double.TryParse(targetStr, out double targetMark))
+            {
+                await DisplayAlert("Error", "Target mark must be a valid number.", "OK");
+                return;
+            }
+
+            if (targetMark < 0 || targetMark > 100)
+            {
+                await DisplayAlert("Error", "Target mark must be between 0 and 100%.", "OK");
+                return;
+            }
+
+            // Create and save new module
+            var module = new Module
+            {
+                UserID = _userID,
+                ModuleName = moduleName,
+                ModuleCode = moduleCode.ToUpper(),
+                TargetMark = targetMark
+            };
+
+            await _db.AddModuleAsync(module);
+            await LoadModules();
+            await DisplayAlert("Success", "Module added successfully.", "OK");
+        }
+        catch (Exception ex)
         {
-            await Navigation.PushAsync(new ModuleDetailPage(_db, vm.Module));
+            Debug.WriteLine($"Error adding module: {ex.Message}");
+            await DisplayAlert("Error", "Failed to add module. Please try again.", "OK");
         }
     }
 
+    // Handles when a module is tapped in the collection view. Navigates to ModuleDetailPage to view and manage assessments for that module.
+    private async void OnModuleTapped(object sender, EventArgs e)
+    {
+        try
+        {
+            if (sender is Border border && border.BindingContext is ModuleViewModel vm)
+            {
+                // Navigate to the detail page for this module
+                await Navigation.PushAsync(new ModuleDetailPage(_db, vm.Module));
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Navigation error: {ex.Message}");
+            await DisplayAlert("Error", "Failed to navigate to module details.", "OK");
+        }
+    }
+
+    // Handles the edit module button click. Allows user to update module name, code, and target mark and validates that the new module code doesn't conflict with other modules.
     private async void OnEditModuleClicked(object sender, EventArgs e)
     {
         if (sender is Button button && button.CommandParameter is ModuleViewModel vm)
         {
+            // Prompt for updated module name
             string moduleName = await DisplayPromptAsync("Edit Module", "Module name:", initialValue: vm.ModuleName);
             if (string.IsNullOrWhiteSpace(moduleName)) return;
 
+            // Prompt for updated module code
             string moduleCode = await DisplayPromptAsync("Edit Module", "Module code:", initialValue: vm.ModuleCode);
             if (string.IsNullOrWhiteSpace(moduleCode)) return;
 
-            
+            // Check if the new module code conflicts with existing codes (excluding current module)
             bool exists = await _db.ModuleCodeExistsAsync(moduleCode, _userID, vm.Module.ModuleID);
             if (exists)
             {
@@ -114,22 +169,28 @@ public partial class Dashboard : ContentPage
                 return;
             }
 
+            // Prompt for updated target mark
             string targetStr = await DisplayPromptAsync("Edit Module", "Target mark (%):", initialValue: vm.TargetMark.ToString(), keyboard: Keyboard.Numeric);
             if (!double.TryParse(targetStr, out double targetMark)) return;
 
+            // Update the module with new values
             vm.Module.ModuleName = moduleName;
             vm.Module.ModuleCode = moduleCode.ToUpper();
             vm.Module.TargetMark = targetMark;
 
             await _db.UpdateModuleAsync(vm.Module);
+
+            // Refresh the display
             await LoadModules();
         }
     }
 
+    // Handles the delete module button click. Prompts for confirmation before deleting the module and all associated assessments.
     private async void OnDeleteModuleClicked(object sender, EventArgs e)
     {
         if (sender is Button button && button.CommandParameter is ModuleViewModel vm)
         {
+            // Ask for confirmation before deleting
             bool confirm = await DisplayAlert("Delete", "Are you sure you want to delete " + vm.ModuleName + "?", "Yes", "No");
             if (!confirm) return;
 
@@ -138,6 +199,8 @@ public partial class Dashboard : ContentPage
 
             // Now safe to delete the module itself
             await _db.DeleteModuleAsync(vm.Module);
+
+            // Refresh the display
             await LoadModules();
         }
     }
@@ -150,6 +213,7 @@ public partial class Dashboard : ContentPage
         {
             return;
         }
+
         // Clear the saved session
         Preferences.Remove("loggedInUserID");
 
