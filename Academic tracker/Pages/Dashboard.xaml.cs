@@ -159,14 +159,23 @@ public partial class Dashboard : ContentPage
 
             // Prompt for updated module code
             string moduleCode = await DisplayPromptAsync("Edit Module", "Module code:", initialValue: vm.ModuleCode);
-            if (string.IsNullOrWhiteSpace(moduleCode)) return;
+            if (string.IsNullOrWhiteSpace(moduleCode))
+            {
+                return;
+            }
 
-            // Check if the new module code conflicts with existing codes (excluding current module)
-            bool exists = await _db.ModuleCodeExistsAsync(moduleCode, _userID, vm.Module.ModuleID);
-            if (exists)
+            // Re-prompting until the user either enters a unique code or cancels (clears the field and taps OK). 
+            while (await _db.ModuleCodeExistsAsync(moduleCode, _userID, vm.Module.ModuleID))
             {
                 await DisplayAlert("Error", "This module code already exists.", "OK");
-                return;
+
+                moduleCode = await DisplayPromptAsync("Edit Module", "Module code (must be unique):", initialValue: moduleCode);
+
+                if (string.IsNullOrWhiteSpace(moduleCode))
+                {
+                    // user cancelled
+                    return;
+                }
             }
 
             // Prompt for updated target mark

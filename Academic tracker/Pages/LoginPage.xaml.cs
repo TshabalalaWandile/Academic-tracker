@@ -42,4 +42,9 @@ public partial class LoginPage : ContentPage
     {
         await Navigation.PushAsync(new RegisterPage(_db));
     }
+
+    private async void OnForgotPasswordClicked(object sender, EventArgs e)
+    {
+        await Navigation.PushAsync(new ForgotPasswordPage(_db));
+    }
 }

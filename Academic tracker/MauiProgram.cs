@@ -22,6 +22,7 @@ namespace Academic_tracker
             builder.Services.AddTransient<RegisterPage>();
             builder.Services.AddTransient<Dashboard>();
             builder.Services.AddTransient<AddAssessmentPage>();
+            builder.Services.AddTransient<ForgotPasswordPage>();
 
 #if DEBUG
             builder.Logging.AddDebug();

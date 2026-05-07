@@ -49,6 +49,13 @@ namespace Academic_tracker.Services
             await _db.InsertAsync(user);
         }
 
+        // Updates an existing user's details in the database (used for password reset).
+        public async Task UpdateUserAsync(User user)
+        {
+            await InitAsync();
+            await _db.UpdateAsync(user);
+        }
+
         // Retrieves all modules for a specific user.Used on the Dashboard to display the user's academic modules.
         public async Task<List<Module>> GetModulesByUserAsync(int userID)
         {
