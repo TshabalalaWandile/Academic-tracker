@@ -8,6 +8,13 @@ public partial class AddAssessmentPage : ContentPage
     private readonly DBServices _db;
     private readonly int _moduleID;
 
+    public AddAssessmentPage(DBServices db, int moduleID)
+    {
+        InitializeComponent();
+        _db = db;
+        _moduleID = moduleID;
+    }
+
     private async void OnSaveClicked(object sender, EventArgs e)
     {
         var name = AssessmentNameEntry.Text?.Trim();
