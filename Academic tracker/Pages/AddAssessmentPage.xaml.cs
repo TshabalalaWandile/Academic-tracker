@@ -8,13 +8,6 @@ public partial class AddAssessmentPage : ContentPage
     private readonly DBServices _db;
     private readonly int _moduleID;
 
-    public AddAssessmentPage(DBServices db, int moduleID)
-    {
-        InitializeComponent();
-        _db = db;
-        _moduleID = moduleID;
-    }
-
     private async void OnSaveClicked(object sender, EventArgs e)
     {
         var name = AssessmentNameEntry.Text?.Trim();
@@ -37,9 +30,28 @@ public partial class AddAssessmentPage : ContentPage
             return;
         }
 
-        if(markObtained > totalMark)
+        // Numeric bounds validation
+        if (weighting <= 0)
         {
-            await DisplayAlert("Error", "Please enter a mark that is less than the test total.", "OK");
+            await DisplayAlert("Error", "Weighting must be greater than 0.", "OK");
+            return;
+        }
+
+        if (totalMark <= 0)
+        {
+            await DisplayAlert("Error", "Total mark must be greater than 0.", "OK");
+            return;
+        }
+
+        if (markObtained < 0)
+        {
+            await DisplayAlert("Error", "Mark obtained cannot be negative.", "OK");
+            return;
+        }
+
+        if (markObtained > totalMark)
+        {
+            await DisplayAlert("Error", "Mark obtained cannot be greater than the total mark.", "OK");
             return;
         }
 
@@ -47,7 +59,7 @@ public partial class AddAssessmentPage : ContentPage
         double currentTotal = await _db.GetTotalWeightingAsync(_moduleID);
         if (currentTotal + weighting > 100)
         {
-            await DisplayAlert("Error", $"Total weighting cannot exceed 100%. You have {100 - currentTotal}% remaining.", "OK");
+            await DisplayAlert("Error", "Total weighting cannot exceed 100%. You have " + (100 - currentTotal) + "% remaining.", "OK");
             return;
         }
 
