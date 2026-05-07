@@ -12,6 +12,7 @@ namespace Academic_tracker.Models
         [PrimaryKey, AutoIncrement]
         public int UserID { get; set; }
         public string Username { get; set; }
+        [Unique]
         public string Email { get; set; }
         public string PasswordHash { get; set; }
     }
