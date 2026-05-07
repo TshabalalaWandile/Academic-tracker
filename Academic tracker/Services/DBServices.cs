@@ -10,20 +10,48 @@ namespace Academic_tracker.Services
 {
     public class DBServices
     {
+        // SQLite database connection instance.
         private SQLiteAsyncConnection _db;
 
+        // Initializes the database connection and creates tables if they don't exist.
         public async Task InitAsync()
         {
-            if (_db != null) return;
+            // Return early if already initialized
+            if (_db != null)
+            {
+                return;
+            }
 
-            var dbPath = Path.Combine(FileSystem.AppDataDirectory, "trackwise.db3");
-            _db = new SQLiteAsyncConnection(dbPath);
+            try
+            {
+                // Get path to store database in app data directory
+                var dbPath = Path.Combine(FileSystem.AppDataDirectory, "trackwise.db3");
 
-            await _db.CreateTableAsync<User>();
-            await _db.CreateTableAsync<Module>();
-            await _db.CreateTableAsync<Assessment>();
+
+                _db = new SQLiteAsyncConnection(dbPath);
+
+                // Create tables for all models if they don't already exist
+                await _db.CreateTableAsync<User>();
+                await _db.CreateTableAsync<Module>();
+                await _db.CreateTableAsync<Assessment>();
+            }
+            catch (Exception ex)
+            {
+                // Log the error to the Visual Studio Output window during debugging
+                System.Diagnostics.Debug.WriteLine("Database initialisation failed: " + ex.Message);
+
+                // Reset _db to null so the next call to InitAsync can attempt initialisation again
+                _db = null;
+
+                // Re-throw the exception so the calling code knows initialisation failed
+                throw;
+            }
+
         }
 
+        // ===================== USER OPERATIONS =====================
+
+        // Retrieves a user by their email address. Email is used during login to find the user account.
         public async Task<User> GetUserByEmailAsync(string email)
         {
             await InitAsync();
