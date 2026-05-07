@@ -1,5 +1,6 @@
 using Academic_tracker.Models;
 using Academic_tracker.Services;
+using System.Net.Mail;
 
 namespace Academic_tracker.Pages;
 
@@ -13,6 +14,20 @@ public partial class RegisterPage : ContentPage
         _db = db;
     }
 
+    // This method validates that the input is a proper internet email address
+    private bool IsValidEmail(string email)
+    {
+        try
+        {
+            var emailAddress = new MailAddress(email);
+            return emailAddress.Address == email;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     private async void OnRegisterClicked(object sender, EventArgs e)
     {
         var username = UsernameEntry.Text?.Trim();
@@ -22,6 +37,13 @@ public partial class RegisterPage : ContentPage
         if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
         {
             await DisplayAlert("Error", "Please fill in all fields.", "OK");
+            return;
+        }
+
+        // Validate that the email entered is in the correct format
+        if (!IsValidEmail(email))
+        {
+            await DisplayAlert("Error", "Please enter a valid email address.", "OK");
             return;
         }
 
