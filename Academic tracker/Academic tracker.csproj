@@ -87,7 +87,7 @@
 
 	<ItemGroup>
 	  <Folder Include="NewFolder1\" />
-	  <Folder Include="NewFolder\NewFolder\" />
+	  <Folder Include="ViewModels\NewFolder\" />
 	</ItemGroup>
 
 </Project>
