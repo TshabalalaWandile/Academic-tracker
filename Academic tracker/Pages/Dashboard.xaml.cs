@@ -24,12 +24,15 @@ public partial class Dashboard : ContentPage
 
     private async Task LoadModules()
     {
+        // Initialize database and retrieve user's modules
         await _db.InitAsync();
         var modules = await _db.GetModulesByUserAsync(_userID);
 
+        // Create view models with running mark calculations
         var viewModels = new List<ModuleViewModel>();
         foreach (var module in modules)
         {
+            // Calculate weighted average of all assessments for this module
             var runningMark = await _db.GetRunningMarkAsync(module.ModuleID);
             viewModels.Add(new ModuleViewModel
             {
@@ -38,14 +41,27 @@ public partial class Dashboard : ContentPage
             });
         }
 
+        // Bind the modules to the collection view for display
         ModulesCollection.ItemsSource = viewModels;
     }
 
     private async void OnAddModuleClicked(object sender, EventArgs e)
     {
+        // Prompt for module name
         string moduleName = await DisplayPromptAsync("New Module", "Enter module name:");
-        if (string.IsNullOrWhiteSpace(moduleName)) return;
+        if (string.IsNullOrWhiteSpace(moduleName))
+        {
+            await DisplayAlert("Error", "Module name is required.", "OK");
+            return;
+        }
 
+        if (moduleName.Length > 100)
+        {
+            await DisplayAlert("Error", "Module name must be 100 characters or less.", "OK");
+            return;
+        }
+
+        // Prompt for module code
         string moduleCode = await DisplayPromptAsync("New Module", "Enter module code:");
         if (string.IsNullOrWhiteSpace(moduleCode)) return;
 
@@ -114,13 +130,13 @@ public partial class Dashboard : ContentPage
     {
         if (sender is Button button && button.CommandParameter is ModuleViewModel vm)
         {
-            bool confirm = await DisplayAlert("Delete", $"Are you sure you want to delete {vm.ModuleName}?", "Yes", "No");
+            bool confirm = await DisplayAlert("Delete", "Are you sure you want to delete " + vm.ModuleName + "?", "Yes", "No");
+            if (!confirm) return;
 
-            if (!confirm)
-            {
-                return;
-            }
+            // Delete all assessments under this module first (cascade delete)
+            await _db.DeleteAssessmentsByModuleAsync(vm.Module.ModuleID);
 
+            // Now safe to delete the module itself
             await _db.DeleteModuleAsync(vm.Module);
             await LoadModules();
         }
