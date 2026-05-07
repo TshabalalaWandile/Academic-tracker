@@ -32,6 +32,9 @@ public partial class LoginPage : ContentPage
             return;
         }
 
+        // Persist the session so the user stays logged in
+        Preferences.Set("loggedInUserID", user.UserID);
+
         await Navigation.PushAsync(new Dashboard(_db, user.UserID));
     }
 
