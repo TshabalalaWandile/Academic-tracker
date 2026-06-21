@@ -20,6 +20,7 @@
 - [About The Project](#about-the-project)
   - [Built With](#built-with)
   - [Data Model](#data-model)
+- [Screenshots](#screenshots)
 - [Features](#features)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
@@ -84,6 +85,16 @@ Assessment
 ```
 
 One user → many modules → many assessments. Deleting a module cascades (in application code) to remove its assessments first, avoiding orphaned rows.
+
+<br>
+
+## Screenshots
+
+> 📸 Coming soon — once you've captured them, drop the image files into a `screenshots/` folder in the repo and swap them into the table below.
+
+| Login | Dashboard | Module Detail |
+| --- | --- | --- |
+| ![Login Screen](screenshots/login.png) | ![Dashboard](screenshots/dashboard.png) | ![Module Detail](screenshots/module-detail.png) |
 
 <br>
 
@@ -194,8 +205,6 @@ The app also tracks total weighting per module so it can warn you before the ass
 - [ ] Replace `DisplayPromptAsync` dialogs with dedicated entry forms for a smoother UX
 - [ ] Add a LICENSE file
 - [ ] Add CI (GitHub Actions) to build all target frameworks on push
-
-See the [open issues](../../issues) for a full list of proposed features and known issues.
 
 <br>
 
