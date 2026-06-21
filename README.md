@@ -5,12 +5,11 @@
 ### A cross-platform .NET MAUI app for tracking module marks and academic progress
 
 [![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?style=for-the-badge&logo=dotnet)](https://dotnet.microsoft.com/)
-[![MAUI](https://img.shields.io/badge/.NET%20MAUI-Cross--Platform-512BD4?style=for-the-badge&logo=dotnet)](https://learn.microsoft.com/dotnet/maui/)
+[![MAUI](https://img.shields.io/badge/.NET%20MAUI-Multi--Target-512BD4?style=for-the-badge&logo=dotnet)](https://learn.microsoft.com/dotnet/maui/)
 [![C#](https://img.shields.io/badge/Language-C%23-239120?style=for-the-badge&logo=csharp)](https://learn.microsoft.com/dotnet/csharp/)
 [![SQLite](https://img.shields.io/badge/Database-SQLite-07405E?style=for-the-badge&logo=sqlite)](https://www.sqlite.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](#license)
 
-[Report Bug](../../issues) · [Request Feature](../../issues) · [View Demo](#screenshots)
 
 </div>
 
@@ -29,6 +28,7 @@
 - [Project Structure](#project-structure)
 - [How the Running Mark Is Calculated](#how-the-running-mark-is-calculated)
 - [Roadmap](#roadmap)
+- [Team](#team)
 - [Contributing](#contributing)
 - [License](#license)
 - [Contact](#contact)
@@ -96,7 +96,7 @@ One user → many modules → many assessments. Deleting a module cascades (in a
 - 📊 **Live running mark calculation** — weighted average computed on the fly from all recorded assessments
 - 🚦 **Status indicators** — On Track / At Risk / Off Track, color-coded for quick scanning
 - ✅ **Weighting integrity checks** — prevents total assessment weighting for a module from exceeding 100%
-- 📱 **Cross-platform** — one codebase ships to Android, iOS, Mac Catalyst, and Windows
+- 📱 **Multi-target project** — one codebase configured for Android, iOS, Mac Catalyst, and Windows (currently verified working on **Android only** — see [Roadmap](#roadmap))
 
 <br>
 
@@ -187,6 +187,7 @@ The app also tracks total weighting per module so it can warn you before the ass
 
 ## Roadmap
 
+- [ ] **Fix iOS / Mac Catalyst builds** — app currently only runs correctly on Android despite the project being configured to multi-target iOS, Mac Catalyst, and Windows
 - [ ] Bring edit-assessment validation in line with add-assessment (bounds checks on weighting, total mark, and mark-vs-total are currently only enforced when *adding* an assessment, not editing one)
 - [ ] Extract the On Track / At Risk / Off Track threshold logic into a single shared helper instead of duplicating it across the Dashboard view model and the module detail page
 - [ ] Add automated tests around `DBServices` (running mark calculation, weighting cap, cascade delete)
@@ -195,6 +196,18 @@ The app also tracks total weighting per module so it can warn you before the ass
 - [ ] Add CI (GitHub Actions) to build all target frameworks on push
 
 See the [open issues](../../issues) for a full list of proposed features and known issues.
+
+<br>
+
+## Team
+
+This project was built collaboratively. Based on commit history:
+
+| Member | Role | GitHub |
+| --- | --- | --- |
+| **Wandile Tshabalala** | Repository owner / Contributor | [@TshabalalaWandile](https://github.com/TshabalalaWandile) |
+| **Tebogo Jr Mabuza** | Contributor | [@Tebogomabuzaa](https://github.com/Tebogomabuzaa) |
+| **Tiago Martins** | Contributor | [@TiagoMartins300905](https://github.com/TiagoMartins300905) |
 
 <br>
 
