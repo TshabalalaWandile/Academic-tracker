@@ -38,34 +38,10 @@ public partial class AddAssessmentPage : ContentPage
         }
 
         // Numeric bounds validation
-        if (weighting <= 0)
+        string? error = AssessmentValidator.Validate(weighting, markObtained, totalMark);
+        if (error != null)
         {
-            await DisplayAlert("Error", "Weighting must be greater than 0.", "OK");
-            return;
-        }
-
-        // A single assessment cannot have weighting above 100%
-        if (weighting > 100)
-        {
-            await DisplayAlert("Error", "Weighting cannot exceed 100%.", "OK");
-            return;
-        }
-
-        if (totalMark <= 0)
-        {
-            await DisplayAlert("Error", "Total mark must be greater than 0.", "OK");
-            return;
-        }
-
-        if (markObtained < 0)
-        {
-            await DisplayAlert("Error", "Mark obtained cannot be negative.", "OK");
-            return;
-        }
-
-        if (markObtained > totalMark)
-        {
-            await DisplayAlert("Error", "Mark obtained cannot be greater than the total mark.", "OK");
+            await DisplayAlert("Error", error, "OK");
             return;
         }
 

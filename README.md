@@ -219,7 +219,7 @@ The app also tracks total weighting per module so it can warn you before the ass
 ## Roadmap
 
 - [ ] **Fix iOS / Mac Catalyst builds** — app currently only runs correctly on Android despite the project being configured to multi-target iOS, Mac Catalyst, and Windows
-- [ ] Bring edit-assessment validation in line with add-assessment (bounds checks on weighting, total mark, and mark-vs-total are currently only enforced when *adding* an assessment, not editing one)
+- [x] Bring edit-assessment validation in line with add-assessment (bounds checks on weighting, total mark, and mark-vs-total are currently only enforced when *adding* an assessment, not editing one)
 - [ ] Extract the On Track / At Risk / Off Track threshold logic into a single shared helper instead of duplicating it across the Dashboard view model and the module detail page
 - [ ] Add automated tests around `DBServices` (running mark calculation, weighting cap, cascade delete)
 - [ ] Replace `DisplayPromptAsync` dialogs with dedicated entry forms for a smoother UX

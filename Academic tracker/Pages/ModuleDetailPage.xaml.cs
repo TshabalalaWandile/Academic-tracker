@@ -74,17 +74,41 @@ public partial class ModuleDetailPage : ContentPage
     {
         if (sender is Button button && button.CommandParameter is Assessment assessment)
         {
+            // DisplayPromptAsync returns null when the user taps Cancel - stop editing without an error
             string name = await DisplayPromptAsync("Edit Assessment", "Assessment name:", initialValue: assessment.AssessmentName);
-            if (string.IsNullOrWhiteSpace(name)) return;
+            if (name == null) return;
+
+            name = name.Trim();
+            if (string.IsNullOrEmpty(name))
+            {
+                await DisplayAlert("Error", "Assessment name is required.", "OK");
+                return;
+            }
 
             string weightingStr = await DisplayPromptAsync("Edit Assessment", "Weighting (%):", initialValue: assessment.Weighting.ToString(), keyboard: Keyboard.Numeric);
-            if (!double.TryParse(weightingStr, out double weighting)) return;
+            if (weightingStr == null) return;
 
             string markStr = await DisplayPromptAsync("Edit Assessment", "Mark obtained:", initialValue: assessment.MarkObtained.ToString(), keyboard: Keyboard.Numeric);
-            if (!double.TryParse(markStr, out double markObtained)) return;
+            if (markStr == null) return;
 
             string totalStr = await DisplayPromptAsync("Edit Assessment", "Total mark:", initialValue: assessment.TotalMark.ToString(), keyboard: Keyboard.Numeric);
-            if (!double.TryParse(totalStr, out double totalMark)) return;
+            if (totalStr == null) return;
+
+            if (!double.TryParse(weightingStr, out double weighting) ||
+                !double.TryParse(markStr, out double markObtained) ||
+                !double.TryParse(totalStr, out double totalMark))
+            {
+                await DisplayAlert("Error", "Please enter valid numbers.", "OK");
+                return;
+            }
+
+            // Same bounds checks as adding an assessment
+            string? error = AssessmentValidator.Validate(weighting, markObtained, totalMark);
+            if (error != null)
+            {
+                await DisplayAlert("Error", error, "OK");
+                return;
+            }
 
             // Check weighting cap excluding current assessment's weighting
             double currentTotal = await _db.GetTotalWeightingAsync(assessment.ModuleID);
