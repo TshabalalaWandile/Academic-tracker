@@ -41,11 +41,12 @@
 
 **Academic Tracker** is a mobile and desktop app that lets students log their modules, record assessment marks as they come in, and instantly see whether they're on pace to hit their target grade for each module — without doing the weighted-average math by hand every time a new mark comes in.
 
-Each module carries a target mark. Every assessment recorded against that module (tests, assignments, practicals, exams) carries its own weighting and score. The app rolls these up into a live **running mark** and flags the module as:
+Each module carries a target mark. Every assessment recorded against that module (tests, assignments, practicals, exams) carries its own weighting and score. The app rolls the assessments marked so far into a live **running mark** and flags the module as:
 
 - ✅ **On Track** — running mark meets or exceeds the target
 - ⚠️ **At Risk** — within 80% of the target, but not there yet
 - ❌ **Off Track** — below 80% of the target
+- **No marks yet** — no assessments have been recorded for the module
 
 The goal is simple: turn "how am I actually doing in this module?" into a number you can check in two taps, instead of a mental calculation you put off until results day.
 
@@ -65,8 +66,9 @@ This project is built entirely on the **.NET MAUI** stack for true single-codeba
 User
  ├─ UserID        (PK)
  ├─ Username
- ├─ Email
- └─ PasswordHash
+ ├─ Email         (unique)
+ ├─ PasswordHash
+ └─ RecoveryCodeHash
 
 Module
  ├─ ModuleID      (PK)
@@ -101,11 +103,11 @@ One user → many modules → many assessments. Deleting a module cascades (in a
 ## Features
 
 - 🔐 **Secure authentication** — registration and login with BCrypt-hashed passwords; session persisted via `Preferences` so users stay logged in between launches
-- 🔑 **Password recovery** — dedicated forgot-password flow
+- 🔑 **Password recovery** — a one-time recovery code is shown at registration (stored only as a BCrypt hash); resetting a forgotten password requires your email plus that code, and a fresh code is issued after each reset
 - 📚 **Module management** — add, edit, and delete modules, each with a unique module code per user and a target mark (0–100%)
 - 📝 **Assessment tracking** — record assessments with name, weighting, mark obtained, and total mark
-- 📊 **Live running mark calculation** — weighted average computed on the fly from all recorded assessments
-- 🚦 **Status indicators** — On Track / At Risk / Off Track, color-coded for quick scanning
+- 📊 **Live running mark calculation** — weighted average of the assessments marked so far, so early results aren't dragged down by assessments that haven't happened yet
+- 🚦 **Status indicators** — On Track / At Risk / Off Track (or No marks yet), color-coded for quick scanning
 - ✅ **Weighting integrity checks** — prevents total assessment weighting for a module from exceeding 100%
 - 📱 **Multi-target project** — one codebase configured for Android, iOS, Mac Catalyst, and Windows (currently verified working on **Android only** — see [Roadmap](#roadmap))
 
@@ -137,11 +139,15 @@ One user → many modules → many assessments. Deleting a module cascades (in a
 
 ## Usage
 
-1. **Register** a new account with a username, email, and password
+1. **Register** a new account with a username, email, and password — then **save the recovery code** you're shown (tap *Copy code* or write it down). It's displayed only once.
 2. **Log in** — your session is remembered until you explicitly log out
 3. From the **Dashboard**, tap **Add Module** and enter the module name, code (e.g. `COMP301`), and target mark
 4. Tap into a module to open its detail page, then **Add Assessment** for each test/assignment, entering its weighting and mark
 5. Watch the **running mark** and status badge update automatically as you add results
+
+**Forgot your password?** Tap *Forgot Password?* on the login screen and enter your email, your recovery code, and a new password (8+ characters). You'll be given a new recovery code to save — the old one stops working.
+
+> Accounts created before recovery codes were added don't have one, so they can't use the reset flow.
 
 <br>
 
@@ -156,7 +162,8 @@ Academic tracker/
 ├── ViewModels/
 │   └── ModuleViewModel.cs
 ├── Services/
-│   └── DBServices.cs          # SQLite data access layer
+│   ├── DBServices.cs          # SQLite data access layer
+│   └── RecoveryCode.cs        # Password recovery code generation and verification
 ├── Pages/
 │   ├── LoginPage.xaml(.cs)
 │   ├── RegisterPage.xaml(.cs)
@@ -175,22 +182,35 @@ Academic tracker/
 
 ## How the Running Mark Is Calculated
 
-For each assessment under a module:
+The running mark is the **weighted average of the assessments recorded so far**:
 
 ```
-Assessment % = (MarkObtained / TotalMark) × 100
-Contribution  = Assessment % × (Weighting / 100)
+Assessment %  = (MarkObtained / TotalMark) × 100
 
-Running Mark  = Σ Contribution, across all assessments in the module
+Running Mark  = Σ (Assessment % × Weighting) / Σ Weighting
+                across all recorded assessments in the module
 ```
 
-**Example** — two assessments, each weighted 50%:
+Dividing by the weighting recorded so far means the running mark reflects how you're doing *on the work that's been marked*, rather than counting assessments that haven't happened yet as zero. If a module has no assessments yet, there's no running mark and the status shows **No marks yet**.
 
-| Assessment | Mark Obtained | Total Mark | Weighting | Contribution |
+**Example 1 — early in the module**, one assessment recorded:
+
+| Assessment | Mark Obtained | Total Mark | Assessment % | Weighting |
 |---|---|---|---|---|
-| Assignment 1 | 90 | 100 | 50% | 45% |
-| Test 1 | 80 | 100 | 50% | 40% |
-| **Running Mark** | | | | **85%** |
+| Test 1 | 45 | 50 | 90% | 20% |
+| **Running Mark** | | | **(90 × 20) / 20 = 90%** | |
+
+Against a 60% target, that's ✅ On Track. (Simply adding up contributions would give 18% and wrongly flag the module as Off Track.)
+
+**Example 2 — module complete**, weightings add up to 100%:
+
+| Assessment | Mark Obtained | Total Mark | Assessment % | Weighting |
+|---|---|---|---|---|
+| Assignment 1 | 90 | 100 | 90% | 50% |
+| Test 1 | 80 | 100 | 80% | 50% |
+| **Running Mark** | | | **(90 × 50 + 80 × 50) / 100 = 85%** | |
+
+Once every assessment is in, the running mark is the same as your final weighted mark.
 
 The app also tracks total weighting per module so it can warn you before the assessments you've entered add up to more than 100%.
 
