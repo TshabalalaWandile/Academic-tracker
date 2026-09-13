@@ -15,11 +15,13 @@ public partial class ForgotPasswordPage : ContentPage
     private async void OnResetClicked(object sender, EventArgs e)
     {
         var email = EmailEntry.Text?.Trim();
+        var recoveryCode = RecoveryCodeEntry.Text?.Trim();
         var newPassword = NewPasswordEntry.Text;
         var confirmPassword = ConfirmPasswordEntry.Text;
 
         // Validate all fields are filled
-        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(newPassword) || string.IsNullOrEmpty(confirmPassword))
+        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(recoveryCode) ||
+            string.IsNullOrEmpty(newPassword) || string.IsNullOrEmpty(confirmPassword))
         {
             await DisplayAlert("Error", "Please fill in all fields.", "OK");
             return;
@@ -39,28 +41,34 @@ public partial class ForgotPasswordPage : ContentPage
             return;
         }
 
-        // Validate password length
-        if (newPassword.Length < 6)
+        // Validate password length (same rule as registration)
+        if (newPassword.Length < 8)
         {
-            await DisplayAlert("Error", "Password must be at least 6 characters.", "OK");
+            await DisplayAlert("Error", "Password must be at least 8 characters.", "OK");
             return;
         }
 
         await _db.InitAsync();
 
-        // Check the email exists in the database
+        // Check the account exists and the recovery code matches. The same message is shown either way,
+        // so this page can't be used to find out which emails have accounts.
         var user = await _db.GetUserByEmailAsync(email);
-        if (user == null)
+        if (user == null || !RecoveryCode.Verify(recoveryCode, user.RecoveryCodeHash))
         {
-            await DisplayAlert("Error", "No account found with that email address.", "OK");
+            await DisplayAlert("Error", "The email or recovery code is incorrect.", "OK");
             return;
         }
 
         // Hash the new password and save
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+
+        // Recovery codes are single-use - replace the one that was just used
+        var newRecoveryCode = RecoveryCode.Generate();
+        user.RecoveryCodeHash = RecoveryCode.Hash(newRecoveryCode);
+
         await _db.UpdateUserAsync(user);
 
-        await DisplayAlert("Success", "Password reset successfully. Please log in with your new password.", "OK");
+        await RecoveryCode.ShowAsync(this, "Password reset successfully. Please log in with your new password.", newRecoveryCode);
         await Navigation.PopAsync();
     }
 

@@ -98,20 +98,24 @@ public partial class RegisterPage : ContentPage
                     return;
                 }
 
+                // Recovery code for resetting a forgotten password - only its hash is stored
+                var recoveryCode = RecoveryCode.Generate();
+
                 // Create new user with hashed password
                 var user = new User
                 {
                     Username = username,
                     Email = email,
                     // Use Bcrypt to securely hash the password - never store plain text passwords
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(password)
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
+                    RecoveryCodeHash = RecoveryCode.Hash(recoveryCode)
                 };
 
                 // Store the new user in the database
                 await _db.AddUserAsync(user);
 
-                // Display success message
-                await DisplayAlert("Success", "Account created! Please log in.", "OK");
+                // Display success message along with the recovery code
+                await RecoveryCode.ShowAsync(this, "Account created! Please log in.", recoveryCode);
 
                 // Return to previous page (LoginPage)
                 await Navigation.PopAsync();

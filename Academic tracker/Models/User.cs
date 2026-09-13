@@ -15,5 +15,7 @@ namespace Academic_tracker.Models
         [Unique]
         public string Email { get; set; }
         public string PasswordHash { get; set; }
+        // BCrypt hash of the recovery code shown at registration. Null for accounts created before recovery codes existed.
+        public string? RecoveryCodeHash { get; set; }
     }
 }
