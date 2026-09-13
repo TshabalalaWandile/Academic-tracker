@@ -84,24 +84,34 @@ namespace Academic_tracker.Services
             await _db.InsertAsync(assessment);
         }
 
-        // Calculates the weighted average (running mark) for a module.
-        // Formula: Sum of (Mark% × Weighting) for all assessments.
-        // Example: If Assessment A is 90% with 50% weight and Assessment B is 80% with 50% weight,
-        // running mark = (90 × 0.5) + (80 × 0.5) = 85%.
-        public async Task<double> GetRunningMarkAsync(int moduleID)
+        // Calculates the running mark for a module: the weighted average of the assessments marked so far.
+        // Formula: Sum of (Mark% × Weighting) ÷ Sum of Weighting, so assessments that haven't happened yet don't drag it down.
+        // Example: A test worth 20% with 90% gives (90 × 20) ÷ 20 = 90%, not 18%.
+        // Once all assessments are in (weighting adds up to 100%) this equals the final weighted mark.
+        // Returns null if the module has no marked assessments yet.
+        public async Task<double?> GetRunningMarkAsync(int moduleID)
         {
             await InitAsync();
             var assessments = await _db.Table<Assessment>().Where(a => a.ModuleID == moduleID).ToListAsync();
 
-            // Sum weighted percentages from all assessments
-            double runningMark = 0;
+            double weightedTotal = 0;
+            double weightingSoFar = 0;
             foreach (var a in assessments)
             {
                 // Calculate assessment percentage and apply weighting
                 if (a.TotalMark > 0)
-                    runningMark += (a.MarkObtained / a.TotalMark) * a.Weighting;
+                {
+                    weightedTotal += (a.MarkObtained / a.TotalMark) * 100 * a.Weighting;
+                    weightingSoFar += a.Weighting;
+                }
             }
-            return runningMark;
+
+            if (weightingSoFar <= 0)
+            {
+                return null;
+            }
+
+            return weightedTotal / weightingSoFar;
         }
 
         // Updates an existing module's information. Called when user edits module details (name, code, or target mark).

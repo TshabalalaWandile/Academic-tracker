@@ -26,10 +26,18 @@ public partial class ModuleDetailPage : ContentPage
 
         // Calculate and display running mark + status on this screen
         var runningMark = await _db.GetRunningMarkAsync(_module.ModuleID);
-        RunningMarkLabel.Text = "Running Mark: "  + runningMark.ToString("F1") + "%";
+        RunningMarkLabel.Text = runningMark == null
+            ? "Running Mark: –"
+            : "Running Mark: " + runningMark.Value.ToString("F1") + "%";
 
+        // Nothing has been marked yet, so there's no status to show
+        if (runningMark == null)
+        {
+            StatusLabel.Text = "No marks yet";
+            StatusLabel.TextColor = Colors.White;
+        }
         // Running mark is at or above the target
-        if (runningMark >= _module.TargetMark)
+        else if (runningMark >= _module.TargetMark)
         {
             StatusLabel.Text = "✅ On Track";
             StatusLabel.TextColor = Colors.LightGreen;
