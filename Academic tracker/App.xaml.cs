@@ -10,7 +10,7 @@ namespace Academic_tracker
             InitializeComponent();
 
             // Check if a user is already logged in from a previous session
-            int savedUserID = Preferences.Get("loggeInUserID", -1);
+            int savedUserID = Preferences.Get("loggedInUserID", -1);
             
             if (savedUserID != -1)
             {
