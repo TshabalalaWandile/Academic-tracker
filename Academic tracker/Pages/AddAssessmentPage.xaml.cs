@@ -44,6 +44,13 @@ public partial class AddAssessmentPage : ContentPage
             return;
         }
 
+        // A single assessment cannot have weighting above 100%
+        if (weighting > 100)
+        {
+            await DisplayAlert("Error", "Weighting cannot exceed 100%.", "OK");
+            return;
+        }
+
         if (totalMark <= 0)
         {
             await DisplayAlert("Error", "Total mark must be greater than 0.", "OK");
