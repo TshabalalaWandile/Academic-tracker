@@ -35,7 +35,8 @@ public partial class LoginPage : ContentPage
         // Persist the session so the user stays logged in
         Preferences.Set("loggedInUserID", user.UserID);
 
-        await Navigation.PushAsync(new Dashboard(_db, user.UserID));
+        // Replace the login page with the dashboard, so Back doesn't return to the login screen
+        Application.Current!.Windows[0].Page = new NavigationPage(new Dashboard(_db, user.UserID));
     }
 
     private async void OnRegisterClicked(object sender, EventArgs e)

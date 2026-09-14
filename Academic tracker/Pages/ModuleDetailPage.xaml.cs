@@ -1,4 +1,4 @@
-﻿using Academic_tracker.Models;
+using Academic_tracker.Models;
 using Academic_tracker.Services;
 using System.Reflection.Metadata;
 
@@ -24,7 +24,14 @@ public partial class ModuleDetailPage : ContentPage
         ModuleCodeLabel.Text = _module.ModuleCode;
         TargetMarkLabel.Text = "Target: " + _module.TargetMark + "%";
 
-        // Calculate and display running mark + status on this screen
+        await RefreshSummaryAsync();
+        await LoadAssessments();
+    }
+
+    // Calculates and displays the running mark + status. Called whenever the assessments change,
+    // so the header doesn't show stale values after an edit or delete.
+    private async Task RefreshSummaryAsync()
+    {
         var runningMark = await _db.GetRunningMarkAsync(_module.ModuleID);
         RunningMarkLabel.Text = runningMark == null
             ? "Running Mark: –"
@@ -54,8 +61,6 @@ public partial class ModuleDetailPage : ContentPage
             StatusLabel.Text = "❌ Off Track";
             StatusLabel.TextColor = Colors.OrangeRed;
         }
-
-        await LoadAssessments();
     }
 
     private async Task LoadAssessments()
@@ -94,9 +99,9 @@ public partial class ModuleDetailPage : ContentPage
             string totalStr = await DisplayPromptAsync("Edit Assessment", "Total mark:", initialValue: assessment.TotalMark.ToString(), keyboard: Keyboard.Numeric);
             if (totalStr == null) return;
 
-            if (!double.TryParse(weightingStr, out double weighting) ||
-                !double.TryParse(markStr, out double markObtained) ||
-                !double.TryParse(totalStr, out double totalMark))
+            if (!NumberInput.TryParse(weightingStr, out double weighting) ||
+                !NumberInput.TryParse(markStr, out double markObtained) ||
+                !NumberInput.TryParse(totalStr, out double totalMark))
             {
                 await DisplayAlert("Error", "Please enter valid numbers.", "OK");
                 return;
@@ -126,6 +131,7 @@ public partial class ModuleDetailPage : ContentPage
 
             await _db.UpdateAssessmentAsync(assessment);
             await LoadAssessments();
+            await RefreshSummaryAsync();
         }
     }
 
@@ -138,6 +144,7 @@ public partial class ModuleDetailPage : ContentPage
 
             await _db.DeleteAssessmentAsync(assessment);
             await LoadAssessments();
+            await RefreshSummaryAsync();
         }
     }
 }

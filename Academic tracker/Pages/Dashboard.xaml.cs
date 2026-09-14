@@ -98,7 +98,7 @@ public partial class Dashboard : ContentPage
                 return;
             }
 
-            if (!double.TryParse(targetStr, out double targetMark))
+            if (!NumberInput.TryParse(targetStr, out double targetMark))
             {
                 await DisplayAlert("Error", "Please enter a valid number for the target mark.", "OK");
                 return;
@@ -148,7 +148,8 @@ public partial class Dashboard : ContentPage
         }
     }
 
-    // Handles the edit module button click. Allows user to update module name, code, and target mark and validates that the new module code doesn't conflict with other modules.
+    // Handles the edit module button click. Allows user to update module name, code, and target mark, applying the same
+    // validation as adding a module, and checks that the new module code doesn't conflict with other modules.
     private async void OnEditModuleClicked(object sender, EventArgs e)
     {
         if (sender is Button button && button.CommandParameter is ModuleViewModel vm)
@@ -157,6 +158,12 @@ public partial class Dashboard : ContentPage
             string moduleName = await DisplayPromptAsync("Edit Module", "Module name:", initialValue: vm.ModuleName);
             if (string.IsNullOrWhiteSpace(moduleName)) return;
 
+            if (moduleName.Length > 100)
+            {
+                await DisplayAlert("Error", "Module name must be 100 characters or less.", "OK");
+                return;
+            }
+
             // Prompt for updated module code
             string moduleCode = await DisplayPromptAsync("Edit Module", "Module code:", initialValue: vm.ModuleCode);
             if (string.IsNullOrWhiteSpace(moduleCode))
@@ -164,7 +171,13 @@ public partial class Dashboard : ContentPage
                 return;
             }
 
-            // Re-prompting until the user either enters a unique code or cancels (clears the field and taps OK). 
+            if (!IsValidModuleCode(moduleCode))
+            {
+                await DisplayAlert("Error", "Module code must be 2-10 alphanumeric characters.", "OK");
+                return;
+            }
+
+            // Re-prompting until the user either enters a unique code or cancels (clears the field and taps OK).
             while (await _db.ModuleCodeExistsAsync(moduleCode, _userID, vm.Module.ModuleID))
             {
                 await DisplayAlert("Error", "This module code already exists.", "OK");
@@ -176,11 +189,29 @@ public partial class Dashboard : ContentPage
                     // user cancelled
                     return;
                 }
+
+                if (!IsValidModuleCode(moduleCode))
+                {
+                    await DisplayAlert("Error", "Module code must be 2-10 alphanumeric characters.", "OK");
+                    return;
+                }
             }
 
             // Prompt for updated target mark
             string targetStr = await DisplayPromptAsync("Edit Module", "Target mark (%):", initialValue: vm.TargetMark.ToString(), keyboard: Keyboard.Numeric);
-            if (!double.TryParse(targetStr, out double targetMark)) return;
+            if (targetStr == null) return;
+
+            if (!NumberInput.TryParse(targetStr, out double targetMark))
+            {
+                await DisplayAlert("Error", "Please enter a valid number for the target mark.", "OK");
+                return;
+            }
+
+            if (targetMark <= 0 || targetMark > 100)
+            {
+                await DisplayAlert("Error", "Target mark must be between 0 and 100%.", "OK");
+                return;
+            }
 
             // Update the module with new values
             vm.Module.ModuleName = moduleName;
@@ -227,6 +258,6 @@ public partial class Dashboard : ContentPage
         Preferences.Remove("loggedInUserID");
 
         // Navigate back to login, clearing the navigation stack
-        Application.Current!.MainPage = new NavigationPage(new LoginPage(_db));
+        Application.Current!.Windows[0].Page = new NavigationPage(new LoginPage(_db));
     }
 }

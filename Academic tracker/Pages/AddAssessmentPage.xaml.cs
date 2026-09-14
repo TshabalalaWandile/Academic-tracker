@@ -29,9 +29,9 @@ public partial class AddAssessmentPage : ContentPage
             return;
         }
 
-        if (!double.TryParse(weightingStr, out double weighting) ||
-            !double.TryParse(markStr, out double markObtained) ||
-            !double.TryParse(totalStr, out double totalMark))
+        if (!NumberInput.TryParse(weightingStr, out double weighting) ||
+            !NumberInput.TryParse(markStr, out double markObtained) ||
+            !NumberInput.TryParse(totalStr, out double totalMark))
         {
             await DisplayAlert("Error", "Please enter valid numbers.", "OK");
             return;
