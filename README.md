@@ -92,11 +92,11 @@ One user → many modules → many assessments. Deleting a module cascades (in a
 
 ## Screenshots
 
-> 📸 Coming soon — once you've captured them, drop the image files into a `screenshots/` folder in the repo and swap them into the table below.
+Captured from the Windows build using demo data.
 
-| Login | Dashboard | Module Detail |
-| --- | --- | --- |
-| ![Login Screen](screenshots/login.png) | ![Dashboard](screenshots/dashboard.png) | ![Module Detail](screenshots/module-detail.png) |
+| Login | Dashboard | Module Detail | Recovery Code |
+| --- | --- | --- | --- |
+| ![Login Screen](screenshots/login.png) | ![Dashboard showing On Track, At Risk and Off Track modules](screenshots/dashboard.png) | ![Module Detail](screenshots/module-detail.png) | ![Recovery code shown after registering](screenshots/recovery-code.png) |
 
 <br>
 
