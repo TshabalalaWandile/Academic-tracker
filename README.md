@@ -28,6 +28,7 @@
 - [Usage](#usage)
 - [Project Structure](#project-structure)
 - [How the Running Mark Is Calculated](#how-the-running-mark-is-calculated)
+- [Cloud Architecture (Proposed)](#cloud-architecture-proposed)
 - [Roadmap](#roadmap)
 - [Team](#team)
 - [Contributing](#contributing)
@@ -216,6 +217,80 @@ The app also tracks total weighting per module so it can warn you before the ass
 
 <br>
 
+## Cloud Architecture (Proposed)
+
+> **Not implemented yet.** Today the app is fully offline: accounts, modules and assessments live only in the SQLite file on the device. This section describes how the app could move to AWS to add online accounts and sync marks across a student's devices.
+
+### Architecture
+
+```mermaid
+flowchart LR
+    subgraph Device["Academic Tracker app (.NET MAUI)"]
+        UI["Pages"] --> DB["DBServices"]
+        DB --> SQLite[("Local SQLite<br/>offline cache")]
+        DB --> Sync["Sync service"]
+    end
+
+    UI -- "Sign in (WebAuthenticator)" --> Cognito
+    Sync -- "HTTPS + JWT" --> API
+
+    subgraph AWS["AWS"]
+        Cognito["Amazon Cognito<br/>user pool + managed login"]
+        API["API Gateway HTTP API<br/>JWT authorizer"] --> Lambda["AWS Lambda<br/>ASP.NET Core minimal API"]
+        Lambda --> Dynamo[("Amazon DynamoDB")]
+        API -. "validates tokens" .-> Cognito
+    end
+```
+
+The app keeps working offline against SQLite. Signing in goes through Amazon Cognito, and a sync service exchanges changes with a C# API running on AWS Lambda, which stores each student's data in DynamoDB. The backend would be defined with the **AWS CDK in C#**, so it lives in this repo and any team member can deploy it.
+
+### How the current app maps to AWS
+
+| Today (local only) | On AWS |
+| --- | --- |
+| `User` table with BCrypt password hashes | Amazon Cognito user pool (sign-up, email verification, sign-in) |
+| Recovery codes (`RecoveryCode.cs`) | Cognito's email-based password reset |
+| Session saved in `Preferences` (`loggedInUserID`) | Cognito tokens stored in `SecureStorage` |
+| `trackwise.db3` is the only copy of the data | SQLite becomes an offline cache; DynamoDB is the source of truth |
+| `DBServices` reads and writes SQLite | `DBServices` also queues changes for a sync service that calls the API |
+| `AssessmentValidator` and the running mark calculation in the app | Moved into a shared class library used by both the app and the Lambda API |
+
+### Data model changes
+
+- `Module` and `Assessment` get a **GUID `Id`**, an **`UpdatedAt`** timestamp (set by the server) and an **`IsDeleted`** flag. Auto-increment integer IDs would clash between devices, and soft deletes let deletions reach other devices.
+- Records are owned by the Cognito user ID (`sub`) instead of the local `UserID`.
+- DynamoDB would use a single table keyed per student:
+
+| Partition key | Sort key | Item |
+| --- | --- | --- |
+| `USER#<cognitoSub>` | `MODULE#<moduleId>` | Module |
+| `USER#<cognitoSub>` | `ASSESSMENT#<moduleId>#<assessmentId>` | Assessment |
+
+### How sync would work
+
+1. Every change is saved to SQLite first and marked as pending, so the app still works without a connection.
+2. On launch, after a change, and when the device comes back online, pending changes are sent to the API.
+3. The app then pulls any records updated on the server since its last sync.
+4. If the same record changed in two places, the most recent `UpdatedAt` wins. Each student only edits their own data, so real conflicts are rare.
+
+### Migration plan
+
+Each phase can ship on its own:
+
+1. **Online accounts** — replace the Login, Register and Forgot Password pages with Cognito managed login.
+2. **Backend** — deploy API Gateway, Lambda and DynamoDB with the AWS CDK.
+3. **Sync** — add the data model changes and the sync service to `DBServices`.
+4. **Existing data** — on first sign-in, offer to upload the modules already stored on the device.
+
+### Cost and considerations
+
+- **Cost:** Lambda (1M requests/month) and DynamoDB (25 GB) stay within AWS's always-free limits at student scale, and Cognito is free for up to 10,000 monthly active users. AWS accounts created after 15 July 2025 don't get a free allowance for API Gateway, so a Lambda function URL that validates the token in code is a free alternative. New accounts also receive AWS credits. *(Checked September 2026 — see [AWS Free Tier](https://aws.amazon.com/free/terms), [Cognito pricing](https://aws.amazon.com/cognito/pricing/) and [API Gateway pricing](https://aws.amazon.com/api-gateway/pricing/).)*
+- **Security:** no AWS keys in the app — it only holds the signed-in user's token, and the API only returns data belonging to that token's user. Validation runs on the server as well as in the app.
+- **Privacy:** storing students' emails and marks online falls under South Africa's POPIA. Consider the Cape Town region (`af-south-1`), after confirming every service used is available there.
+- **Platforms:** confirm `WebAuthenticator` support on each target platform before relying on it for sign-in, particularly Windows.
+
+<br>
+
 ## Roadmap
 
 - [ ] **Fix iOS / Mac Catalyst builds** — app currently only runs correctly on Android despite the project being configured to multi-target iOS, Mac Catalyst, and Windows
@@ -225,6 +300,7 @@ The app also tracks total weighting per module so it can warn you before the ass
 - [ ] Replace `DisplayPromptAsync` dialogs with dedicated entry forms for a smoother UX
 - [ ] Add a LICENSE file
 - [ ] Add CI (GitHub Actions) to build all target frameworks on push
+- [ ] Online accounts and cloud sync on AWS — see [Cloud Architecture (Proposed)](#cloud-architecture-proposed)
 
 <br>
 
